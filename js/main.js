@@ -28,20 +28,9 @@ const engagementBoundary = [
   500000,
   0
 ];
-const profitBoundary = [
-  0,
-  10.0,
-  12.5,
-  15.0,
-  17.5,
-  20.0,
-  22.5,
-  25.0,
-  27.5,
-  30.0
-];
+const profitBoundary = [0, 12.5, 100, 2000];
 
-const profitCommission = [0, 5, 5, 10, 10, 15, 15, 20, 20, 25];
+const profitCommission = [0, 5, 10, 20];
 
 const roundString = string => {
   let newString = string;
@@ -50,7 +39,6 @@ const roundString = string => {
     (g0, g1) => ` ${Math.round(g1 * 100) / 100} `
   );
 
-  console.log(newString);
   return newString;
 };
 const calculateProfit = (
@@ -72,8 +60,6 @@ const calculateProfit = (
   let fee = 0;
   for (let i = 0; i < engB.length; i += 1) {
     if (initialInvestment >= engB[i]) {
-      console.log("stop");
-
       investment = initialInvestment * (1 - engC[i] / 100);
       BertieCommission.engagement = initialInvestment * engC[i] / 100;
       fee = engC[i];
@@ -82,12 +68,9 @@ const calculateProfit = (
   }
   const grossProfit = investment * actualProfitPercentage * 0.01;
 
-  console.log(grossProfit);
   let w1 = "";
   for (let i = 1; i < profB.length; i += 1) {
-    console.log("added profit", i, profB[i]);
-    if (actualProfitPercentage >= profB[i - 1]) {
-      console.log("bigger");
+    if (actualProfitPercentage > profB[i - 1]) {
       const x =
         profC[i] /
         100 *
@@ -103,15 +86,17 @@ const calculateProfit = (
         (Math.min(profB[i], actualProfitPercentage) - profB[i - 1]) /
         100 -
         x}.   <br\>`;
-      console.log(BertieCommission.profit);
     } else {
-      console.log("break");
       break;
     }
   }
   const customerProfit =
     grossProfit - BertieCommission.profit - BertieCommission.engagement;
   const customerPercentage = customerProfit / initialInvestment * 100;
+  const BertieProfit =
+    (BertieCommission.engagement + BertieCommission.profit) *
+    100 /
+    initialInvestment;
   const explanation = `The Client has invested ${initialInvestment}, an initial engagement fee of ${fee}% which would be $${
     BertieCommission.engagement
   } is taken. Leaving the company $${investment} left to invest <br\> <br\>
@@ -120,14 +105,13 @@ const calculateProfit = (
     ${w1} <br\>
     Hence if the company makes ${actualProfitPercentage}% from an initial investment of ${initialInvestment}, the client will have ${initialInvestment +
     customerProfit} making a percentage of ${customerPercentage}%, the company will take $${BertieCommission.engagement +
-    BertieCommission.profit} which is ${BertieCommission.engagement +
-    BertieCommission.profit * 100 / investment}%.
+    BertieCommission.profit} which is ${BertieProfit}%.
   `;
   return {
     investment: Math.round(investment),
     customerProfit: Math.round(customerProfit),
     customerPercentage: Math.round(customerPercentage * 100) / 100,
-    BertieCommission: Math.round(BertieCommission * 100) / 100,
+    BertieCommission: Math.round(BertieProfit * 100) / 100,
     explanation: roundString(explanation)
   };
 };
@@ -136,7 +120,6 @@ $(document).ready(function() {
   $(".contact2-form-btn").click(function() {
     const inv = $("#investment").val() * 1;
     const profit = $("#profit").val() * 1;
-    console.log(profit, inv);
     let info = calculateProfit(inv, profit);
 
     $("#result1").text(`Client Profit:`);
@@ -145,26 +128,5 @@ $(document).ready(function() {
     $("#result4").text(`$${info.customerPercentage}% `);
     $("#ello").text("");
     $("#ello").append(info.explanation);
-  });
-
-  $(".pushme-with-color").click(function() {
-    $(this).addClass("btn-danger");
-    $(this).removeClass("btn-warning");
-  });
-
-  $(".with-color").click(function() {
-    if ($(this).hasClass("btn-warning")) {
-      $(this).addClass("btn-danger");
-      $(this).removeClass("btn-warning");
-    } else {
-      $(this).addClass("btn-warning");
-      $(this).removeClass("btn-danger");
-    }
-  });
-
-  $(".pushme2").click(function() {
-    $(this).text(function(i, v) {
-      return v === "PUSH ME" ? "PULL ME" : "PUSH ME";
-    });
   });
 });
